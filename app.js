@@ -30,3 +30,11 @@ if(page===5){addChart('Daily paid impressions','bar',dates,[ds('Impressions',dai
 
 const distinctRender=render;
 render=function(){distinctRender();if(page===0){const a=selectedRows(),dates=[...new Set(a.map(r=>r.date))];const weeks=[];for(let i=0;i<dates.length;i+=7){const days=dates.slice(i,i+7);weeks.push({label:days[0],rows:a.filter(r=>days.includes(r.date))})}$('chartTitle').textContent='Weekly organic and paid visibility';detailChart('bar',weeks.map(w=>w.label),[ds('Organic visibility',weeks.map(w=>sum(w.rows,'views')),palette[0]),ds('Paid impressions',weeks.map(w=>sum(w.rows,'impressions')),palette[1])]);}};render();
+
+const audienceRender=render;
+render=function(){audienceRender();if(page!==4)return;const a=selectedRows();const li=a.filter(r=>r.platform==='LinkedIn');if(!li.length)return;const total=markets.reduce((s,m,mi)=>s+(li.some(r=>r.market===m)?3200+mi*2100+2*4700+sum(rows.filter(r=>r.market===m&&r.platform==='LinkedIn'),'growth'):0),0);
+const dimensions=[['LinkedIn · Job functions',['Marketing','Operations','Sales','Engineering','Business development','Other'],[24,19,17,15,13,12]],['LinkedIn · Seniority',['Entry','Senior','Manager','Director','Executive','Other'],[22,32,23,12,7,4]],['LinkedIn · Industries',['Retail','Consumer goods','Technology','Professional services','Manufacturing','Other'],[26,21,18,15,11,9]],['LinkedIn · Company size',['1–10','11–50','51–200','201–500','501–1000','1001+'],[12,24,27,15,10,12]]];
+const heading=document.createElement('h2');heading.className='audience-heading';heading.textContent='LinkedIn · Professional audience';extraGrid.append(heading);
+const note=document.createElement('p');note.className='audience-heading';note.textContent=fmt(total)+' LinkedIn followers · Fictional demographic snapshot';extraGrid.append(note);
+dimensions.forEach(([title,labels,weights])=>{const counts=weights.map(w=>Math.floor(total*w/100));counts[counts.length-1]+=total-counts.reduce((s,v)=>s+v,0);addChart(title,'bar',labels,[ds('LinkedIn followers',counts,palette)]);const c=extraCharts[extraCharts.length-1];if(c){c.options.indexAxis='y';c.update()}});
+};render();
